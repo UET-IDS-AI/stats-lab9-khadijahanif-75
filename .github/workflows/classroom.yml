@@ -1,0 +1,46 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Q1
+      id: q1
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Q1
+        setup-command: pip install numpy pytest
+        command: pytest test_AIstats_lab.py::test_joint_pmf test_AIstats_lab.py::test_marginals_discrete
+          test_AIstats_lab.py::test_conditional_pmf test_AIstats_lab.py::test_conditional_distribution
+          test_AIstats_lab.py::test_independence_discrete test_AIstats_lab.py::test_normalization_constant
+          test_AIstats_lab.py::test_joint_pdf_continuous test_AIstats_lab.py::test_marginal_fy
+          test_AIstats_lab.py::test_conditional_pdf test_AIstats_lab.py::test_conditional_pdf_integral
+        timeout: 10
+        max-score: 5
+    - name: Q2
+      id: q2
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Q2
+        setup-command: pip install numpy pytest
+        command: pytest test_AIstats_lab.py::test_sample_space test_AIstats_lab.py::test_expectations
+          test_AIstats_lab.py::test_variances test_AIstats_lab.py::test_covariance_and_correlation
+          test_AIstats_lab.py::test_independence_and_uncorrelated test_AIstats_lab.py::test_variance_sum_and_identity
+        timeout: 10
+        max-score: 5
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        Q1_RESULTS: "${{steps.q1.outputs.result}}"
+        Q2_RESULTS: "${{steps.q2.outputs.result}}"
+      with:
+        runners: q1,q2
